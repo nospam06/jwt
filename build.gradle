@@ -1,0 +1,26 @@
+
+allprojects {
+    group 'org.example'
+    version "$project_version"
+}
+
+subprojects {
+    apply plugin: 'java-library'
+    tasks.withType(JavaCompile) {
+        options.encoding("UTF-8")
+    }
+    test {
+        useJUnitPlatform()
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        compileOnly "org.projectlombok:lombok:$lombok_version"
+        annotationProcessor "org.projectlombok:lombok:$lombok_version"
+        testCompileOnly "org.projectlombok:lombok:$lombok_version"
+        testAnnotationProcessor "org.projectlombok:lombok:$lombok_version"
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
+    }
+}

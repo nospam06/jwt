@@ -5,10 +5,9 @@ import lombok.Data;
 import java.time.Instant;
 
 @Data
-public class OnetimeTokenDto {
-    private String token;
-    private String email;
+public class UserTokenDto {
+    private String uuid;
+    private String userUuid;
     private Instant createDate;
     private Instant expirationDate;
-    private Instant usedDate;
 }

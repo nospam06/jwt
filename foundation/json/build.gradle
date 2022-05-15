@@ -1,0 +1,4 @@
+dependencies {
+    api("org.springframework.boot:spring-boot-starter-json:$springboot_version")
+            { exclude module: "spring-web" }
+}

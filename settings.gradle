@@ -3,9 +3,11 @@ rootProject.name = 'jwt'
 include ":spring"
 include ":spring-web"
 include ":spring-security"
+include ":json"
 project(':spring').projectDir = "$rootDir/foundation/spring" as File
 project(':spring-web').projectDir = "$rootDir/foundation/spring-web" as File
 project(':spring-security').projectDir = "$rootDir/foundation/spring-security" as File
+project(':json').projectDir = "$rootDir/foundation/json" as File
 
 include ":spring-jdbc"
 project(':spring-jdbc').projectDir = "$rootDir/persistence/spring-jdbc" as File

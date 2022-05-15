@@ -1,0 +1,4 @@
+org:
+  example:
+    jwt:
+      keyId: CHANGE_ME

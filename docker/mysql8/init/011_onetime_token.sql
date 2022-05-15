@@ -1,5 +1,5 @@
 use testdb;
-create table token(
+create table onetime_token(
    `token` VARCHAR(255) NOT NULL,
    `email` VARCHAR(255) NOT NULL,
    `create_date` TIMESTAMP,

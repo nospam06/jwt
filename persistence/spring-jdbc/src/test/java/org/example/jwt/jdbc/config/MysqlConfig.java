@@ -27,7 +27,7 @@ public class MysqlConfig {
     public DataSource local() {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        hikariConfig.setJdbcUrl("jdbc:mysql:/localhost:3306/testdb?useSSL=false&characterEncoding=UTF8&connectionTimeZone=UTC&allowPublicKeyRetrieval=true");
+        hikariConfig.setJdbcUrl("jdbc:mysql://localhost:3306/testdb?useSSL=false&characterEncoding=UTF8&connectionTimeZone=UTC&allowPublicKeyRetrieval=true");
         hikariConfig.setUsername("testuser");
         hikariConfig.setPassword("testuser");
         return new HikariDataSource(hikariConfig);

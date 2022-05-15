@@ -19,7 +19,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserDao implements JdbcDao<UserDto> {
     private static final String INSERT = "insert into user values(?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String UPDATE = "update user set password?, first_name=?, last_name=?, email=?, phone=?, update_date=? where uuid=?";
+    private static final String UPDATE = "update user set password=?, first_name=?, last_name=?, email=?, phone=?, update_date=? where uuid=?";
     private static final String DELETE = "delete from user where uuid=?";
     private static final String FIND_ONE = "select * from user where uuid=?";
     private final ConversionService conversionService;

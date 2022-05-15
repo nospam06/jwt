@@ -18,6 +18,8 @@ import org.springframework.jdbc.core.JdbcOperations;
 
 import javax.sql.DataSource;
 
+import java.util.concurrent.TimeUnit;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
@@ -52,7 +54,7 @@ public class EntityTest {
     }
 
     @Test
-    void userCrudTest() {
+    void userCrudTest() throws InterruptedException {
         UserDto userDto = new UserDto();
         userDto.setPassword("hello_world");
         userDto.setFirstName("foo");
@@ -70,6 +72,8 @@ public class EntityTest {
         assertEquals(userDto.getEmail(), actual.getEmail());
         assertEquals(userDto.getPhone(), actual.getPhone());
         // update
+        TimeUnit.MILLISECONDS.sleep(500);
+        userDto.setUuid(actual.getUuid());
         userDto.setFirstName("hello");
         userDto.setLastName("world");
         UserDto update = userDao.update(userDto);

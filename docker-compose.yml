@@ -1,0 +1,23 @@
+version: '3'
+services:
+
+  mysql8:
+    image: mysql:8.0.22
+    container_name: mysql8
+    networks:
+      - bridge
+    ports:
+      - 3306:3306
+    environment:
+      TZ: Etc/UTC
+      MYSQL_ROOT_PASSWORD: "password"
+    volumes:
+      - mysql8-data:/var/lib/mysql
+      - ./docker/mysql8/init:/docker-entrypoint-initdb.d
+
+volumes:
+  mysql8-data:
+
+networks:
+  bridge:
+    driver: bridge

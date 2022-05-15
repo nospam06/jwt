@@ -9,4 +9,11 @@ project(':spring-security').projectDir = "$rootDir/foundation/spring-security" a
 
 include ":spring-jdbc"
 project(':spring-jdbc').projectDir = "$rootDir/persistence/spring-jdbc" as File
+include ":model"
+project(':model').projectDir = "$rootDir/persistence/model" as File
+
+include ":dto"
+include ":endpoint"
+project(':dto').projectDir = "$rootDir/business/dto" as File
+project(':endpoint').projectDir = "$rootDir/business/endpoint" as File
 

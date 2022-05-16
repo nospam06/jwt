@@ -15,6 +15,19 @@ services:
       - mysql8-data:/var/lib/mysql
       - ./docker/mysql8/init:/docker-entrypoint-initdb.d
 
+  jwtapp:
+    image: jwtapp:latest
+    container_name: jwtapp
+    networks:
+      - bridge
+    ports:
+      - 8080:8080
+    depends_on:
+      - mysql8
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql8:3306/testdb?useSSL=false&characterEncoding=UTF8&connectionTimeZone=UTC&allowPublicKeyRetrieval=true
+
+
 volumes:
   mysql8-data:
 

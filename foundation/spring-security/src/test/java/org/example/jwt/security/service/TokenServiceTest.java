@@ -7,12 +7,16 @@ import org.example.jwt.security.config.SecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.jwt.crypto.sign.SignerVerifier;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class TokenServiceTest {
-
+    public static void main(String[] args) throws NoSuchAlgorithmException {
+        MessageDigest.getInstance("SHA-256");
+    }
     @Test
     void verifyToken() {
         SignerVerifier signerVerifier = new SecurityConfig().signer(UUID.randomUUID().toString());

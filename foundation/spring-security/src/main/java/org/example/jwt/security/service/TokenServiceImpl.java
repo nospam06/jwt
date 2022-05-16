@@ -10,6 +10,9 @@ import org.springframework.security.jwt.JwtHelper;
 import org.springframework.security.jwt.crypto.sign.SignerVerifier;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
@@ -37,6 +40,27 @@ public class TokenServiceImpl implements TokenService {
             throw new SecurityTokenException("token expired", null);
         }
         return userTokenDto;
+    }
+
+    public String sign(String content) {
+        MessageDigest sha256 = getSha256();
+        return new String(sha256.digest(content.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+    }
+
+    private MessageDigest getSha256() {
+        try {
+            return MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            throw new SecurityTokenException("hashing error", e);
+        }
+    }
+
+    public void verify(String content, String signature) {
+        MessageDigest sha256 = getSha256();
+        String hash = new String(sha256.digest(content.getBytes(StandardCharsets.UTF_8)));
+        if (!hash.equals(signature)) {
+            throw new SecurityTokenException("password not correct", null);
+        }
     }
 
     private Jwt createJwt(String payload) {

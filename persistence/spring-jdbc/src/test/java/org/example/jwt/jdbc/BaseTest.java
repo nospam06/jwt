@@ -21,7 +21,7 @@ public class BaseTest {
 
     protected DataSource getDataSource() {
         if (dataSource == null) {
-            dataSource = new MysqlConfig().local();
+            dataSource = new MysqlConfig().fromContainer();
         }
         return dataSource;
     }

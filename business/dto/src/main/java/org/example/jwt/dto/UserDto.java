@@ -8,6 +8,7 @@ import java.time.Instant;
 @Data
 public class UserDto {
     private String uuid;
+    @JsonIgnore
     private String password;
     @JsonIgnore
     private String passwordSha;

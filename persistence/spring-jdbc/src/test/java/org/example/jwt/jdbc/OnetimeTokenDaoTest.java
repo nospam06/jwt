@@ -27,7 +27,7 @@ public class OnetimeTokenDaoTest extends BaseTest {
     void setup() {
         if (OnetimeTokenDao == null) {
             DataSource dataSource = getDataSource();
-            JdbcOperations jdbcOperations = new JdbcConfig().jdbcConfig(dataSource);
+            JdbcOperations jdbcOperations = new JdbcConfig().datasourceConfig(dataSource);
             GenericConversionService conversionService = new GenericConversionService();
             conversionService.addConverter(new OnetimeTokenOnetimeTokenDtoConverter());
             conversionService.addConverter(new OnetimeTokenDtoOnetimeTokenConverter());

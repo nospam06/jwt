@@ -11,6 +11,8 @@ public class MysqlContainer {
                 .withDatabaseName("testdb")
                 .withUsername("testuser")
                 .withPassword("testuser")
+                .withEnv("TZ", "UTC")
+                .withUrlParam("serverTimezone", "UTC")
                 .withInitScript("sql/test_init.sql");
         container.start();
         return container;

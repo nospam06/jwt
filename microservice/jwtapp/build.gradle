@@ -1,0 +1,18 @@
+plugins {
+    id 'org.springframework.boot' version '2.6.7'
+}
+dependencies {
+    implementation project(':spring')
+    runtimeOnly project(':endpoint')
+    runtimeOnly project(':spring-jdbc')
+}
+bootJar {
+    mainClass.set('org.example.jwt.Application')
+    archiveBaseName.set('jwtapp')
+}
+jar {
+    enabled = false
+}
+bootRun {
+    systemProperty "spring.profiles.active", System.properties.get("spring.profiles.active")
+}

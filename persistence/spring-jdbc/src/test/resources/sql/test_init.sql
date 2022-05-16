@@ -14,7 +14,7 @@ create table user(
 alter table user
 add unique key user_email (`email` asc) visible;
 
-create table token(
+create table onetime_token(
    `token` VARCHAR(255) NOT NULL,
    `email` VARCHAR(255) NOT NULL,
    `create_date` TIMESTAMP,
@@ -26,7 +26,6 @@ create table token(
 create table user_token(
    `uuid` VARCHAR(255) NOT NULL,
    `user_uuid` VARCHAR(255) NOT NULL,
-   `token` VARCHAR(255) NOT NULL,
    `create_date` TIMESTAMP,
    `expiration_date` TIMESTAMP,
    PRIMARY KEY ( `uuid` )

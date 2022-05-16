@@ -1,6 +1,5 @@
 dependencies {
     implementation project(":dto")
-    implementation project(":logic")
-    api project(":spring-web")
+    implementation project(":spring-jdbc")
     implementation project(":spring-security")
 }

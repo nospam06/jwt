@@ -4,3 +4,8 @@ spring:
     url: jdbc:mysql://localhost:3306/testdb?useSSL=false&characterEncoding=UTF8&connectionTimeZone=UTC&allowPublicKeyRetrieval=true
     username: testuser
     password: testuser
+
+org:
+  example:
+    jwt:
+      keyId: bfa0b1ea-3a63-4a07-8a71-c817e79b891a

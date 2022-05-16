@@ -6,6 +6,7 @@ import org.example.jwt.jdbc.PersistenceException;
 import org.example.jwt.jdbc.api.JdbcDao;
 import org.example.jwt.jdbc.converter.UserRowMapper;
 import org.example.jwt.model.User;
+import org.example.jwt.security.api.TokenService;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,7 @@ public class UserDao implements JdbcDao<UserDto> {
     private static final String FIND_BY_EMAIL = "select * from user where email=?";
     private final ConversionService conversionService;
     private final JdbcOperations jdbcOperations;
+    private final TokenService tokenService;
 
     @Override
     public UserDto insert(UserDto dto) {
@@ -32,7 +34,8 @@ public class UserDao implements JdbcDao<UserDto> {
         Instant now = Instant.now();
         String dateTimeString = now.truncatedTo(ChronoUnit.MILLIS).toString().replace("T", " ").replace("Z", "");
         String uuid = UUID.randomUUID().toString();
-        jdbcOperations.update(INSERT, uuid, dto.getPassword(),
+        String password = tokenService.sign(dto.getPassword());
+        jdbcOperations.update(INSERT, uuid, password,
                 user.getFirstName(), user.getLastName(), user.getEmail(), user.getPhone(), dateTimeString, dateTimeString);
      return findOne(uuid).orElseThrow(() -> new PersistenceException("cannot insert user " + uuid, null));
     }
@@ -43,7 +46,8 @@ public class UserDao implements JdbcDao<UserDto> {
         Instant now = Instant.now();
         String dateTimeString = now.truncatedTo(ChronoUnit.MILLIS).toString().replace("T", " ").replace("Z", "");
         String uuid = dto.getUuid();
-        jdbcOperations.update(UPDATE, dto.getPassword(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getPhone(), dateTimeString, uuid);
+        String password = tokenService.sign(dto.getPassword());
+        jdbcOperations.update(UPDATE, password, user.getFirstName(), user.getLastName(), user.getEmail(), user.getPhone(), dateTimeString, uuid);
         return findOne(uuid).orElseThrow(() -> new PersistenceException("cannot update user " + uuid, null));
     }
 

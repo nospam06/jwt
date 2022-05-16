@@ -6,4 +6,9 @@ public interface TokenService {
     String newToken(String userUuid);
 
     UserTokenDto verifyToken(String token);
+
+    String sign(String content);
+
+    void verify(String content, String signature);
+
 }

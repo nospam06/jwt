@@ -1,0 +1,8 @@
+spring:
+  jackson:
+    deserialization:
+      USE_BIG_DECIMAL_FOR_FLOATS: true
+      FAIL_ON_UNKNOWN_PROPERTIES: false
+      ACCEPT_SINGLE_VALUE_AS_ARRAY: true
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false

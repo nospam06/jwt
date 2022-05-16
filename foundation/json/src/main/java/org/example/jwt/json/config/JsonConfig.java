@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class JsonConfig {
     @Bean
-    public Module javaTime() {
+    public JavaTimeModule javaTime() {
         return new JavaTimeModule();
     }
 
@@ -22,7 +22,7 @@ public class JsonConfig {
         objectMapper.configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true);
         objectMapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
         objectMapper.setDefaultPrettyPrinter(new DefaultPrettyPrinter());
-        objectMapper.registerModules(new JavaTimeModule());
+        objectMapper.registerModules(javaTime());
         return objectMapper;
     }
 }

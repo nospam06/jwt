@@ -14,7 +14,6 @@ public class UserToken {
     private String uuid;
     @Column(name = "user_uuid")
     private String userUuid;
-    private String token;
     @Column(name = "create_date")
     private Instant createDate;
     @Column(name = "expiration_date")

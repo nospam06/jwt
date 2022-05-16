@@ -1,9 +1,9 @@
 package org.example.jwt.security.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.example.jwt.dto.UserTokenDto;
+import org.example.jwt.security.SecurityTokenException;
 import org.example.jwt.security.api.TokenService;
 import org.springframework.security.jwt.Jwt;
 import org.springframework.security.jwt.JwtHelper;
@@ -20,24 +20,23 @@ public class TokenServiceImpl implements TokenService {
     private final ObjectMapper objectMapper;
     private final SignerVerifier signer;
 
-    @Override public String newToken(String userUuid) {
-        UserTokenDto userTokenDto = setUserContext(userUuid);
+    @Override
+    public String newToken(String userUuid) {
+        UserTokenDto userTokenDto = setTokenContext(userUuid);
         String payload = createJwtPayload(userTokenDto);
         Jwt jwt = createJwt(payload);
         return jwt.getEncoded();
     }
 
-    @Override public UserTokenDto verifyToken(String token) {
+    @Override
+    public UserTokenDto verifyToken(String token) {
+        UserTokenDto userTokenDto;
         Jwt jwt = JwtHelper.decodeAndVerify(token, signer);
-        try {
-            UserTokenDto userTokenDto = objectMapper.readValue(jwt.getClaims(), UserTokenDto.class);
-            if (userTokenDto.getExpirationDate().isBefore(Instant.now())) {
-                throw new RuntimeException("token expired");
-            }
-            return userTokenDto;
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+        userTokenDto = extractPayload(jwt);
+        if (userTokenDto.getExpirationDate().isBefore(Instant.now())) {
+            throw new SecurityTokenException("token expired", null);
         }
+        return userTokenDto;
     }
 
     private Jwt createJwt(String payload) {
@@ -47,12 +46,20 @@ public class TokenServiceImpl implements TokenService {
     private String createJwtPayload(UserTokenDto userTokenDto) {
         try {
             return objectMapper.writeValueAsString(userTokenDto);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new SecurityTokenException("Cannot create security token", e);
         }
     }
 
-    private UserTokenDto setUserContext(String userUuid) {
+    private UserTokenDto extractPayload(Jwt jwt) {
+        try {
+            return objectMapper.readValue(jwt.getClaims(), UserTokenDto.class);
+        } catch (Exception e) {
+            throw new SecurityTokenException("Error reading payload", e);
+        }
+    }
+
+    private UserTokenDto setTokenContext(String userUuid) {
         UserTokenDto userTokenDto = new UserTokenDto();
         userTokenDto.setUuid(UUID.randomUUID().toString());
         userTokenDto.setUserUuid(userUuid);
@@ -62,5 +69,4 @@ public class TokenServiceImpl implements TokenService {
         userTokenDto.setExpirationDate(expirationDate);
         return userTokenDto;
     }
-
 }

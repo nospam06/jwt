@@ -10,9 +10,3 @@ create table user_token(
 ALTER TABLE `user_token`
 ADD INDEX `user_token_user_uuid_idx` (`user_uuid` ASC) VISIBLE;
 ;
-ALTER TABLE `user_token`
-ADD CONSTRAINT `user_token_user_uuid`
-  FOREIGN KEY (`user_uuid`)
-  REFERENCES `user` (`uuid`)
-  ON DELETE CASCADE
-  ON UPDATE NO ACTION;

@@ -1,44 +1,46 @@
 package org.example.jwt.jdbc;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.jwk.RSAKey;
 import lombok.extern.slf4j.Slf4j;
 import org.example.jwt.dto.UserDto;
 import org.example.jwt.jdbc.config.JdbcConfig;
 import org.example.jwt.jdbc.converter.UserDtoUserConverter;
 import org.example.jwt.jdbc.converter.UserUserDtoConverter;
 import org.example.jwt.jdbc.dao.UserDao;
-import org.example.jwt.json.config.JsonConfig;
 import org.example.jwt.security.config.SecurityConfig;
 import org.example.jwt.security.service.TokenServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.jdbc.core.JdbcOperations;
-import org.springframework.security.jwt.crypto.sign.SignerVerifier;
 
 import javax.sql.DataSource;
-
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 public class UserDaoTest extends BaseTest {
     private static UserDao userDao;
 
     @BeforeEach
-    void setup() {
+    void setup() throws JOSEException {
         if (userDao == null) {
             DataSource dataSource = getDataSource();
             JdbcOperations jdbcOperations = new JdbcConfig().datasourceConfig(dataSource);
             GenericConversionService conversionService = new GenericConversionService();
             conversionService.addConverter(new UserDtoUserConverter());
             conversionService.addConverter(new UserUserDtoConverter());
-            ObjectMapper objectMapper = new JsonConfig().createObjectMapper();
-            SignerVerifier signer = new SecurityConfig().signer(UUID.randomUUID().toString());
-            TokenServiceImpl tokenService = new TokenServiceImpl(objectMapper, signer);
+            SecurityConfig securityConfig = new SecurityConfig();
+            RSAKey privateKey = securityConfig.generateRsaKey(UUID.randomUUID().toString());
+            RSASSASigner signer = new RSASSASigner(privateKey);
+            TokenServiceImpl tokenService = new TokenServiceImpl(signer, securityConfig.publicKey(privateKey.toPublicJWK()));
             userDao = new UserDao(conversionService, jdbcOperations, tokenService);
         }
     }

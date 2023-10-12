@@ -1,4 +1,4 @@
-FROM openjdk:11
+FROM openjdk:17
 
 COPY build/libs/jwtapp-*.jar /opt/app.jar
 

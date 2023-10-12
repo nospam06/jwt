@@ -7,5 +7,5 @@ dependencies {
     runtimeOnly 'mysql:mysql-connector-java:8.0.29'
     testImplementation "org.testcontainers:mysql:1.17.1"
     testImplementation "org.testcontainers:jdbc:1.17.1"
-    testImplementation 'org.springframework.security:spring-security-jwt:1.1.1.RELEASE'
+    testImplementation project(":spring-security")
 }

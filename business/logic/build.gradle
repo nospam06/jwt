@@ -1,5 +1,5 @@
 dependencies {
     implementation project(":dto")
-    implementation project(":spring-jdbc")
-    implementation project(":spring-security")
+    implementation project(":spring-jpa")
+    implementation project(":spring-jwt")
 }

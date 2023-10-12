@@ -8,18 +8,20 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.example.jwt.logic.api.UserService;
 import org.example.jwt.security.SecurityTokenException;
-import org.example.jwt.security.api.TokenService;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
 public class SecurityFilter implements Filter {
     public static final String AUTHORIZATION = "AUTHORIZATION";
     public static final String TOKEN_PATH = "/api/jwt/token";
-    private final TokenService tokenService;
+    public static final Set<String> ROOT = Set.of("/", "/favicon.ico");
+    private final UserService userService;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -30,11 +32,11 @@ public class SecurityFilter implements Filter {
         if (request instanceof HttpServletRequest httpRequest) {
             String path = httpRequest.getRequestURI();
             Object authorization = httpRequest.getHeader(AUTHORIZATION);
-            if (authorization == null && !path.startsWith(TOKEN_PATH)) {
+            if (!ROOT.contains(path) && authorization == null && !path.startsWith(TOKEN_PATH)) {
                 throw new SecurityTokenException("need security token to access secured path", null);
             }
             if (authorization != null) {
-                tokenService.verifyToken(authorization.toString().replace("bearer ", ""));
+                userService.validateToken(authorization.toString().replace("bearer ", ""));
             }
         }
         chain.doFilter(request, response);

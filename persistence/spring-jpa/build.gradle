@@ -1,0 +1,9 @@
+dependencies {
+    implementation project(":dto")
+    implementation project(":spring")
+    implementation project(":spring-jwt")
+    api "org.springframework.boot:spring-boot-starter-data-jpa:$springboot_version"
+    runtimeOnly 'mysql:mysql-connector-java:8.0.29'
+    testRuntimeOnly 'com.h2database:h2:2.2.220'
+    testImplementation("org.springframework.boot:spring-boot-starter-test:$springboot_version")
+}

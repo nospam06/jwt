@@ -4,7 +4,6 @@ spring:
     url: jdbc:mysql://localhost:3306/testdb?useSSL=false&characterEncoding=UTF8&connectionTimeZone=UTC&allowPublicKeyRetrieval=true
     username: testuser
     password: testuser
-
-org:
-  example:
-    jwt:
+  jpa:
+    hibernate:
+      ddl-auto: update

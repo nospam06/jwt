@@ -4,7 +4,7 @@ plugins {
 dependencies {
     implementation project(':spring')
     runtimeOnly project(':endpoint')
-    runtimeOnly project(':spring-jdbc')
+    runtimeOnly project(':spring-jpa')
 }
 bootJar {
     mainClass.set('org.example.jwt.Application')

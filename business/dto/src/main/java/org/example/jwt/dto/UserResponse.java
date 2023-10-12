@@ -1,8 +1,10 @@
 package org.example.jwt.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class UserResponse {
-    private String token;
+public class UserResponse extends UserLoginResponse {
+    private String email;
 }

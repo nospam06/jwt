@@ -4,7 +4,18 @@ spring:
     url: jdbc:mysql://localhost:3306/testdb?useSSL=false&characterEncoding=UTF8&connectionTimeZone=UTC&allowPublicKeyRetrieval=true
     username: testuser
     password: testuser
+  security:
+    user:
+      name: admin
+      password: password
 
 org:
   example:
     jwt:
+      keystore:
+        path: ../../.keystore
+        password: changeme
+        keyAlias: app1
+
+logging:
+  level:

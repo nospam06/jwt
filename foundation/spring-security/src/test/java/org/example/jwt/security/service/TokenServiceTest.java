@@ -1,13 +1,14 @@
 package org.example.jwt.security.service;
 
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.crypto.RSASSASigner;
-import com.nimbusds.jose.jwk.RSAKey;
 import lombok.extern.slf4j.Slf4j;
 import org.example.jwt.dto.UserTokenDto;
-import org.example.jwt.security.config.SecurityConfig;
+import org.example.jwt.security.config.JwtConfig;
+import org.example.jwt.security.config.JwtProperties;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
 
+import java.security.KeyStore;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
@@ -18,11 +19,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class TokenServiceTest {
 
     @Test
-    void verifyToken() throws JOSEException {
-        SecurityConfig securityConfig = new SecurityConfig();
-        RSAKey privateKey = securityConfig.generateRsaKey();
-        RSASSASigner signer = securityConfig.signer(privateKey);
-        TokenServiceImpl tokenService = new TokenServiceImpl(signer, securityConfig.verifier(privateKey.toPublicJWK()));
+    void verifyToken() {
+        JwtConfig jwtConfig = new JwtConfig();
+        JwtProperties jwtProperties = new JwtProperties();
+        jwtProperties.setPath("../../.keystore");
+        jwtProperties.setPassword("changeme");
+        jwtProperties.setKeyAlias("app1");
+        KeyStore keyStore = jwtConfig.keyStore(jwtProperties);
+        JwtEncoder jwtEncoder = jwtConfig.jwtEncoder(keyStore, jwtProperties);
+        JwtDecoder jwtDecoder = jwtConfig.jwtDecoder(keyStore, jwtProperties);
+        TokenServiceImpl tokenService = new TokenServiceImpl(jwtEncoder, jwtDecoder, jwtConfig.passwordEncoder());
         String userUuid = UUID.randomUUID().toString();
         UserTokenDto dto = create(userUuid);
         String token = tokenService.newToken(dto);

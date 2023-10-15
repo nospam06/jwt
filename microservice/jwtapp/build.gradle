@@ -1,10 +1,11 @@
 plugins {
-    id 'org.springframework.boot' version "$springboot_version"
+    id 'org.springframework.boot' version "$springbootVersion"
 }
 dependencies {
     implementation project(':spring')
     runtimeOnly project(':endpoint')
     runtimeOnly project(':spring-jpa')
+    runtimeOnly project(':spring-security')
 }
 bootJar {
     mainClass.set('org.example.jwt.Application')

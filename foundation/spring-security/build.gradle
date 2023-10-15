@@ -1,0 +1,6 @@
+dependencies {
+    implementation project(":dto")
+    api "org.springframework.boot:spring-boot-starter-security:$springbootVersion"
+    api "org.springframework.security:spring-security-oauth2-jose:6.1.2"
+    implementation "org.springframework.security:spring-security-oauth2-resource-server:6.1.2"
+}

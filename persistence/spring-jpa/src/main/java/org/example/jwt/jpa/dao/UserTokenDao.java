@@ -67,7 +67,7 @@ public class UserTokenDao implements JdbcDao<UserTokenDto> {
         userTokenDto.setUuid(UUID.randomUUID().toString());
         userTokenDto.setUserUuid(userUuid);
         Instant now = Instant.now();
-        Instant expirationDate = now.plus(1, ChronoUnit.DAYS);
+        Instant expirationDate = now.plus(15, ChronoUnit.MINUTES);
         userTokenDto.setCreateDate(now);
         userTokenDto.setExpirationDate(expirationDate);
         return userTokenDto;

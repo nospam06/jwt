@@ -16,19 +16,23 @@ import org.example.jwt.logic.api.UserService;
 import org.example.jwt.security.SecurityTokenException;
 import org.example.jwt.security.api.TokenService;
 import org.springframework.beans.BeanUtils;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService, UserDetailsService {
     private final TokenService tokenService;
     private final UserDao userDao;
     private final UserTokenDao userTokenDao;
@@ -51,6 +55,7 @@ public class UserServiceImpl implements UserService {
         UserDto newUser = userDao.insert(userDto);
         UserTokenDto userTokenDto = userTokenDao.create(newUser.getUuid());
         String newToken = tokenService.newToken(userTokenDto);
+        userTokenDto.setToken(newToken);
         userTokenDao.insert(userTokenDto);
         return createResponse(request.getEmail(), newToken);
     }
@@ -87,9 +92,8 @@ public class UserServiceImpl implements UserService {
                 .stream().flatMap(Collection::stream)
                 .filter(token -> token.getExpirationDate().isAfter(now)).findFirst()
                 .orElseGet(() -> {
-                    UserTokenDto dto = new UserTokenDto();
-                    dto.setUserUuid(realUser.getUuid());
-                    dto.setExpirationDate(now.plus(1, ChronoUnit.DAYS));
+
+                    UserTokenDto dto = userTokenDao.create(realUser.getUuid());
                     String token = tokenService.newToken(dto);
                     dto.setToken(token);
                     return userTokenDao.insert(dto);
@@ -135,11 +139,20 @@ public class UserServiceImpl implements UserService {
     @Override
     public void validateToken(String token) {
         UserTokenDto userTokenDto = tokenService.verifyToken(token);
+        if (userTokenDto.getExpirationDate().isBefore(Instant.now())) {
+            throw new SecurityTokenException("security token expired", null);
+        }
         List<UserTokenDto> tokens = userTokenDao.findAll(userTokenDto.getUserUuid());
         if (tokens.stream().filter(ut -> ut.getToken().equals(userTokenDto.getToken()))
                 .filter(ut -> ut.getExpirationDate().isAfter(Instant.now()))
                 .findFirst().isEmpty()) {
-            throw new SecurityTokenException("security token not valid", null);
+            throw new SecurityTokenException("security token not found or expired", null);
         }
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        UserDto userDto = findByEmail(username);
+        return new User(userDto.getEmail(), userDto.getPasswordSha(), AuthorityUtils.createAuthorityList(List.of("USER")));
     }
 }

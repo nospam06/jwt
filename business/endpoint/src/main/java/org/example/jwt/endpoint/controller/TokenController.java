@@ -3,8 +3,6 @@ package org.example.jwt.endpoint.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.jwt.dto.OnetimeTokenDto;
-import org.example.jwt.dto.UserLoginRequest;
-import org.example.jwt.dto.UserLoginResponse;
 import org.example.jwt.dto.UserRequest;
 import org.example.jwt.dto.UserResponse;
 import org.example.jwt.logic.api.UserService;
@@ -19,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping(value = "/api/jwt/token", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/jwt/token", produces = MediaType.APPLICATION_JSON_VALUE)
 public class TokenController {
     private final UserService userService;
 
@@ -37,10 +35,5 @@ public class TokenController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public UserResponse newUser(@RequestBody UserRequest request) {
         return userService.createUser(request);
-    }
-
-    @PostMapping(path = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public UserLoginResponse login(@RequestBody UserLoginRequest request) {
-        return userService.login(request);
     }
 }

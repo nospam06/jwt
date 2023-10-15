@@ -1,7 +1,7 @@
 
 allprojects {
     group 'org.example'
-    version "$project_version"
+    version "$projectVersion"
 }
 
 subprojects {
@@ -16,10 +16,10 @@ subprojects {
         mavenCentral()
     }
     dependencies {
-        compileOnly "org.projectlombok:lombok:$lombok_version"
-        annotationProcessor "org.projectlombok:lombok:$lombok_version"
-        testCompileOnly "org.projectlombok:lombok:$lombok_version"
-        testAnnotationProcessor "org.projectlombok:lombok:$lombok_version"
+        compileOnly "org.projectlombok:lombok:$lombokVersion"
+        annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+        testCompileOnly "org.projectlombok:lombok:$lombokVersion"
+        testAnnotationProcessor "org.projectlombok:lombok:$lombokVersion"
         testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     }

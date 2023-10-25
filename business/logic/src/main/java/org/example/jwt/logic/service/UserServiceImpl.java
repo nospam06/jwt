@@ -6,15 +6,13 @@ import org.example.jwt.dto.UserDto;
 import org.example.jwt.dto.UserLoginRequest;
 import org.example.jwt.dto.UserLoginResponse;
 import org.example.jwt.dto.UserRequest;
-import org.example.jwt.dto.UserResponse;
 import org.example.jwt.dto.UserTokenDto;
-import org.example.jwt.jpa.dao.OnetimeTokenDao;
-import org.example.jwt.jpa.dao.UserDao;
-import org.example.jwt.jpa.dao.UserTokenDao;
 import org.example.jwt.logic.UserException;
 import org.example.jwt.logic.api.UserService;
 import org.example.jwt.security.SecurityTokenException;
 import org.example.jwt.security.api.TokenService;
+import org.example.jwt.nosql.api.NoSqlRepository;
+import org.example.jwt.nosql.query.QueryParameter;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
@@ -22,58 +20,79 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.Instant;
-import java.util.Collection;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService, UserDetailsService {
     private final TokenService tokenService;
-    private final UserDao userDao;
-    private final UserTokenDao userTokenDao;
-    private final OnetimeTokenDao onetimeTokenDao;
+    private final NoSqlRepository repository;
 
     @Override
     public OnetimeTokenDto createOnetimeToken(String email) {
         OnetimeTokenDto onetimeTokenDto = new OnetimeTokenDto();
         onetimeTokenDto.setEmail(email);
-        return onetimeTokenDao.insert(onetimeTokenDto);
+        Instant now = Instant.now();
+        Instant expiration = now.plusSeconds(TimeUnit.HOURS.toSeconds(1));
+        String uuid = UUID.randomUUID().toString();
+        onetimeTokenDto.setToken(uuid);
+        onetimeTokenDto.setCreateDate(now);
+        onetimeTokenDto.setExpirationDate(expiration);
+        repository.insert(onetimeTokenDto);
+        return onetimeTokenDto;
     }
 
     @Override
-    @Transactional
-    public UserResponse createUser(UserRequest request) {
+    public UserLoginResponse createUser(UserRequest request) {
         // validation
         OnetimeTokenDto onetimeTokenDto = validationUserRequest(request);
-        markTokenAsUsed(onetimeTokenDto);
+        onetimeTokenDto.setUsedDate(Instant.now());
+        repository.save(onetimeTokenDto);
         UserDto userDto = createUserDto(request);
-        UserDto newUser = userDao.insert(userDto);
-        UserTokenDto userTokenDto = userTokenDao.create(newUser.getUuid());
+        repository.save(userDto);
+        UserTokenDto userTokenDto = createUserToken(userDto.getUuid());
         String newToken = tokenService.newToken(userTokenDto);
         userTokenDto.setToken(newToken);
-        userTokenDao.insert(userTokenDto);
-        return createResponse(request.getEmail(), newToken);
-    }
-
-    private void markTokenAsUsed(OnetimeTokenDto onetimeTokenDto) {
-        onetimeTokenDto.setUsedDate(Instant.now());
-        onetimeTokenDao.update(onetimeTokenDto);
+        Instant now = Instant.now();
+        String uuid = UUID.randomUUID().toString();
+        userTokenDto.setUuid(uuid);
+        userTokenDto.setCreateDate(now);
+        repository.save(userTokenDto);
+        return createResponse(newToken);
     }
 
     private UserDto createUserDto(UserRequest request) {
         UserDto userDto = new UserDto();
-        BeanUtils.copyProperties(request, userDto);
+        BeanUtils.copyProperties(request, userDto); Instant now = Instant.now();
+        String uuid = UUID.randomUUID().toString();
+        userDto.setUuid(uuid);
+        userDto.setCreateDate(now);
+        userDto.setUpdateDate(now);
+        String sha = tokenService.sign(request.getPassword());
+        userDto.setPasswordSha(sha);
         return userDto;
     }
 
-    private static UserResponse createResponse(String email, String newToken) {
-        UserResponse userResponse = new UserResponse();
-        userResponse.setEmail(email);
+    public UserTokenDto createUserToken(String userUuid) {
+        UserTokenDto userTokenDto = new UserTokenDto();
+        userTokenDto.setUuid(UUID.randomUUID().toString());
+        userTokenDto.setUserUuid(userUuid);
+        Instant now = Instant.now();
+        Instant expirationDate = now.plus(30, ChronoUnit.DAYS);
+        userTokenDto.setCreateDate(now);
+        userTokenDto.setExpirationDate(expirationDate);
+        return userTokenDto;
+    }
+
+    private static UserLoginResponse createResponse(String newToken) {
+        UserLoginResponse userResponse = new UserLoginResponse();
         userResponse.setToken(newToken);
         return userResponse;
     }
@@ -82,23 +101,24 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     public UserLoginResponse login(UserLoginRequest request) {
         validationUserLoginRequest(request);
         Instant now = Instant.now();
-        Optional<UserDto> userDto = userDao.findByEmail(request.getEmail());
+        List<UserDto> userDto = repository.findAll(UserDto.class, QueryParameter.builder().whereEqual("email", request.getEmail()).build());
         if (userDto.isEmpty()) {
             throw new UserException("user not found", null);
         }
-        tokenService.verify(request.getPassword(), userDto.get().getPasswordSha());
-        UserDto realUser = userDto.get();
-        UserTokenDto userTokenDto = userDto.map(user -> userTokenDao.findAll(user.getUuid()))
-                .stream().flatMap(Collection::stream)
-                .filter(token -> token.getExpirationDate().isAfter(now)).findFirst()
+        tokenService.verify(request.getPassword(), userDto.get(0).getPasswordSha());
+        UserDto realUser = userDto.get(0);
+        UserTokenDto userTokenDto = userDto.stream().findFirst()
+                .flatMap(user -> repository.findAll(UserTokenDto.class, QueryParameter.builder().whereEqual("userUuid", user.getUuid()).build())
+                .stream()
+                .filter(token -> token.getExpirationDate().isAfter(now)).findFirst())
                 .orElseGet(() -> {
-
-                    UserTokenDto dto = userTokenDao.create(realUser.getUuid());
+                    UserTokenDto dto = createUserToken(realUser.getUuid());
                     String token = tokenService.newToken(dto);
                     dto.setToken(token);
-                    return userTokenDao.insert(dto);
+                    repository.insert(dto);
+                    return dto;
                 });
-        return createResponse(null, userTokenDto.getToken());
+        return createResponse(userTokenDto.getToken());
     }
 
     private void validationUserLoginRequest(UserLoginRequest request) {
@@ -113,14 +133,14 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 || !StringUtils.hasText(request.getFirstName()) || !StringUtils.hasText(request.getLastName())) {
             throw new UserException("required information absent", null);
         }
-        Optional<OnetimeTokenDto> onetimeTokenDto = onetimeTokenDao.findOne(request.getOnetimeToken());
+        Optional<OnetimeTokenDto> onetimeTokenDto = repository.findById(OnetimeTokenDto.class, request.getOnetimeToken());
         if (onetimeTokenDto.isEmpty() || onetimeTokenDto.get().getUsedDate() != null
                 || onetimeTokenDto.get().getExpirationDate().isBefore(Instant.now())
                 || !request.getEmail().equals(onetimeTokenDto.get().getEmail())) {
             throw new UserException("one time token not valid", null);
         }
-        Optional<UserDto> userDto = userDao.findByEmail(request.getEmail());
-        if (userDto.isPresent()) {
+        List<UserDto> userDto = repository.findAll(UserDto.class, QueryParameter.builder().whereEqual("email", request.getEmail()).build());
+        if (!userDto.isEmpty()) {
             throw new UserException("user already existed", null);
         }
         return onetimeTokenDto.get();
@@ -128,12 +148,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public UserDto findOne(String uuid) {
-        return userDao.findOne(uuid).orElseThrow(() -> new UserException("user not found", null));
+        return repository.findById(UserDto.class, uuid).orElseThrow(() -> new UserException("user not found", null));
     }
 
     @Override
     public UserDto findByEmail(String email) {
-        return userDao.findByEmail(email).orElseThrow(() -> new UserException("user not found", null));
+        return repository.findAll(UserDto.class, QueryParameter.builder().whereEqual("email", email).build())
+        .stream().findFirst().orElseThrow(() -> new UserException("user not found", null));
     }
 
     @Override
@@ -142,7 +163,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         if (userTokenDto.getExpirationDate().isBefore(Instant.now())) {
             throw new SecurityTokenException("security token expired", null);
         }
-        List<UserTokenDto> tokens = userTokenDao.findAll(userTokenDto.getUserUuid());
+        List<UserTokenDto> tokens = repository.findAll(UserTokenDto.class, QueryParameter.builder().whereEqual("userUuid", userTokenDto.getUserUuid()).build());
         if (tokens.stream().filter(ut -> ut.getToken().equals(userTokenDto.getToken()))
                 .filter(ut -> ut.getExpirationDate().isAfter(Instant.now()))
                 .findFirst().isEmpty()) {

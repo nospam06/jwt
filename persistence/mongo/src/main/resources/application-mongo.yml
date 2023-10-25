@@ -1,0 +1,5 @@
+spring:
+  data:
+    mongodb:
+      database: mydb
+      uri: mongodb://mongodb:mongodb@localhost:27017/?authMechanism=SCRAM-SHA-1

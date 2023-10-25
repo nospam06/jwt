@@ -9,8 +9,8 @@ project(':spring-web').projectDir = "$rootDir/foundation/spring-web" as File
 project(':spring-security').projectDir = "$rootDir/foundation/spring-security" as File
 project(':json').projectDir = "$rootDir/foundation/json" as File
 
-include ":spring-jpa"
-project(':spring-jpa').projectDir = "$rootDir/persistence/spring-jpa" as File
+include ":mongo"
+project(':mongo').projectDir = "$rootDir/persistence/mongo" as File
 
 include ":dto"
 include ":endpoint"

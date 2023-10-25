@@ -16,6 +16,3 @@ org:
         path: ../../.keystore
         password: changeme
         keyAlias: app1
-
-logging:
-  level:
